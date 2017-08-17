@@ -35,6 +35,11 @@ def GetRequires(makefile=None):
                     packages.extend(value.split('"')[0].lstrip().split(" "))
     return packages
 
+def GetAtomicPackages():
+    with open("atomic.yaml","r") as fh:
+        return yaml.load(fh)['data']['components']['rpms'].keys()
+
+atomic_packages=GetAtomicPackages()
 tests=[]
 packages=[]
 wd=os.getcwd()
@@ -55,5 +60,4 @@ playbook = [UnsortableOrderedDict([
     ])])
 ])]
 
-#print playbook
 print yaml.dump(playbook,default_flow_style=False)
