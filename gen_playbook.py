@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import sys
 import yaml
 from collections import OrderedDict
 
@@ -36,7 +37,8 @@ def GetRequires(makefile=None):
     return packages
 
 def GetAtomicPackages():
-    with open("atomic.yaml","r") as fh:
+    basedir = os.path.abspath(os.path.dirname(sys.argv[0]))
+    with open(os.path.join(basedir, "atomic.yaml"), "r") as fh:
         return yaml.load(fh)['data']['components']['rpms'].keys()
 
 atomic_packages=GetAtomicPackages()
