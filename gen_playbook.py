@@ -51,15 +51,29 @@ for directory, dirnames, filenames in os.walk(wd):
     if 'Makefile' in filenames:
         GetRequires(os.path.relpath(directory) + "/Makefile")
 
+tagged_tests = {}
 
-playbook = [UnsortableOrderedDict([
-    ('hosts', 'localhost'),
-    ('tags', ['classic', 'container', 'atomic']),
-    ('roles', [UnsortableOrderedDict([
-        ('role', 'standard-test-beakerlib'),
-        ('tests', sorted(tests)),
-        ('required_packages', sorted(list(set(packages))))
-    ])])
-])]
+tagged_tests['classic'] = list(tests)
+tagged_tests['classic'].insert(0, 'BOGUS-CLASSIC-TEST')
 
-print yaml.dump(playbook,default_flow_style=False)
+tagged_tests['container'] = list(tests)
+tagged_tests['container'].insert(0, 'BOGUS-CONTAINER-TEST')
+
+tagged_tests['atomic'] = list(tests)
+tagged_tests['atomic'].insert(0, 'BOGUS-ATOMIC-TEST')
+
+
+playbook = []
+for tag in ['classic', 'container', 'atomic']:
+    role = [('role', 'standard-test-beakerlib'),
+            ('tests', sorted(tagged_tests[tag]))]
+    if tag != 'atomic':
+        role.append(('required_packages', sorted(list(set(packages)))))
+
+    playbook.append(UnsortableOrderedDict([
+        ('hosts', 'localhost'),
+        ('tags', [tag]),
+        ('roles', [UnsortableOrderedDict(role)])
+    ]))
+
+print yaml.dump(playbook, default_flow_style=False)
