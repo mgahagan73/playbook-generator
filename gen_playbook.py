@@ -36,6 +36,7 @@ def GetRequires(makefile=None):
                     packages.extend(value.split('"')[0].lstrip().split(" "))
     return packages
 
+# https://github.com/fedora-modularity/baseruntime-package-lists/blob/master/data/Fedora/devel/atomic/atomic.yaml
 def GetAtomicPackages():
     basedir = os.path.abspath(os.path.dirname(sys.argv[0]))
     with open(os.path.join(basedir, "atomic.yaml"), "r") as fh:
