@@ -24,6 +24,7 @@ yaml.add_representer(UnsortableOrderedDict,
                      yaml.representer.SafeRepresenter.represent_dict)
 
 def GetRequires(makefile=None):
+    packages = []
     if not makefile:
         raise IOError("/path/to/Makefile is required for GetRequires")
     with open(makefile) as f:
@@ -42,26 +43,40 @@ def GetAtomicPackages():
     with open(os.path.join(basedir, "atomic.yaml"), "r") as fh:
         return yaml.load(fh)['data']['components']['rpms'].keys()
 
+def FilterPackages(pkgs=[], pkg_list=[]):
+    """ Return true iff all items in pkgs are found in pkg_list """
+    for p in pkgs:
+        if p not in pkg_list:
+            return False
+    return True
+
+packages = []
 atomic_packages=GetAtomicPackages()
-tests=[]
-packages=[]
+test = {}
+tests_classic=[]
+tests_container=[]
+tests_atomic=[]
 wd=os.getcwd()
 for directory, dirnames, filenames in os.walk(wd):
     if 'runtest.sh' in filenames:
-        tests.append(os.path.relpath(directory))
+        test[os.path.relpath(directory)] = []
     if 'Makefile' in filenames:
-        GetRequires(os.path.relpath(directory) + "/Makefile")
+        test[os.path.relpath(directory)] = GetRequires(os.path.relpath(directory) + "/Makefile")
+
+for k in test.keys():
+    if FilterPackages(test[k], atomic_packages):
+        tests_atomic.append(k)
+    tests_classic.append(k)
+    tests_container.append(k)
+    packages.extend(test[k])
 
 tagged_tests = {}
 
-tagged_tests['classic'] = list(tests)
-tagged_tests['classic'].insert(0, 'BOGUS-CLASSIC-TEST')
+tagged_tests['classic'] = list(tests_classic)
 
-tagged_tests['container'] = list(tests)
-tagged_tests['container'].insert(0, 'BOGUS-CONTAINER-TEST')
+tagged_tests['container'] = list(tests_container)
 
-tagged_tests['atomic'] = list(tests)
-tagged_tests['atomic'].insert(0, 'BOGUS-ATOMIC-TEST')
+tagged_tests['atomic'] = list(tests_atomic)
 
 
 playbook = []
