@@ -78,9 +78,14 @@ tagged_tests['container'] = list(tests_container)
 
 tagged_tests['atomic'] = list(tests_atomic)
 
+test_tags = ['classic', 'container', 'atomic']
+if not tagged_tests['atomic']:
+    test_tags.remove('atomic')
+if not tagged_tests['container']:
+    test_tags.remove('container')
 
 playbook = []
-for tag in ['classic', 'container', 'atomic']:
+for tag in test_tags:
     role = [('role', 'standard-test-beakerlib'),
             ('tests', sorted(tagged_tests[tag]))]
     if tag != 'atomic':
